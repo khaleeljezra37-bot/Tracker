@@ -27,15 +27,16 @@ export default async function handler(req, res) {
       country = "unknown", org = "unknown", loc = "unknown";
 
   try {
-    const geo = await fetch(`https://ipapi.co/${ip}/json/`);
+    // ip-api.com works reliably from Vercel serverless
+    const geo = await fetch(`http://ip-api.com/json/${ip}?fields=status,city,regionName,country,org,lat,lon`);
     const d   = await geo.json();
-    city    = d.city         || "unknown";
-    region  = d.region       || "unknown";
-    country = d.country_name || "unknown";
-    org     = d.org          || "unknown";
-    loc     = d.latitude && d.longitude
-              ? `${d.latitude}, ${d.longitude}`
-              : "unknown";
+    if (d.status === "success") {
+      city    = d.city       || "unknown";
+      region  = d.regionName || "unknown";
+      country = d.country    || "unknown";
+      org     = d.org        || "unknown";
+      loc     = d.lat && d.lon ? `${d.lat}, ${d.lon}` : "unknown";
+    }
   } catch (_) {}
 
   const payload = {
@@ -70,4 +71,4 @@ export default async function handler(req, res) {
   } catch (_) {}
 
   return res.status(200).json({ ok: true });
-    }
+}
