@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "functions": {
+    "api/track.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "routes": [
+    { "src": "/api/track", "dest": "/api/track.js" },
+    { "src": "/(.*)",      "dest": "/index.html"   }
+  ]
+}
