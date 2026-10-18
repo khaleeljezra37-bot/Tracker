@@ -8,36 +8,20 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).end();
 
-  const ip =
-    req.headers["x-real-ip"] ||
-    req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
-    req.socket?.remoteAddress ||
-    "unknown";
-
-  const body     = req.body || {};
-  const ua       = body.ua     || "unknown";
-  const lang     = body.lang   || "unknown";
-  const ref      = body.ref    || "Direct";
-  const screen_s = body.screen || "unknown";
-  const tz       = body.tz     || "unknown";
-  const pageURL  = body.url    || "unknown";
+  const body      = req.body || {};
+  const ip        = body.ip      || "unknown";
+  const city      = body.city    || "unknown";
+  const region    = body.region  || "unknown";
+  const country   = body.country || "unknown";
+  const org       = body.org     || "unknown";
+  const loc       = body.loc     || "unknown";
+  const ua        = body.ua      || "unknown";
+  const lang      = body.lang    || "unknown";
+  const ref       = body.ref     || "Direct";
+  const screen_s  = body.screen  || "unknown";
+  const tz        = body.tz      || "unknown";
+  const pageURL   = body.url     || "unknown";
   const timestamp = new Date().toISOString();
-
-  let city = "unknown", region = "unknown",
-      country = "unknown", org = "unknown", loc = "unknown";
-
-  try {
-    // ip-api.com works reliably from Vercel serverless
-    const geo = await fetch(`http://ip-api.com/json/${ip}?fields=status,city,regionName,country,org,lat,lon`);
-    const d   = await geo.json();
-    if (d.status === "success") {
-      city    = d.city       || "unknown";
-      region  = d.regionName || "unknown";
-      country = d.country    || "unknown";
-      org     = d.org        || "unknown";
-      loc     = d.lat && d.lon ? `${d.lat}, ${d.lon}` : "unknown";
-    }
-  } catch (_) {}
 
   const payload = {
     username: "SiteTracker",
@@ -71,4 +55,4 @@ export default async function handler(req, res) {
   } catch (_) {}
 
   return res.status(200).json({ ok: true });
-}
+         }
