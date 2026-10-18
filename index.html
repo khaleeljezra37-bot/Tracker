@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .center {
+    text-align: center;
+    opacity: 0;
+    animation: fadein 0.8s ease forwards 0.3s;
+  }
+  h1 { font-size: 2rem; font-weight: 300; letter-spacing: 0.05em; }
+  p  { margin-top: 10px; color: #555; font-size: 0.9rem; }
+  @keyframes fadein { to { opacity: 1; } }
+</style>
+</head>
+<body>
+<div class="center">
+  <h1>Welcome</h1>
+  <p>You're in the right place.</p>
+</div>
+<script>
+(async () => {
+  try {
+    await fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ua:     navigator.userAgent,
+        lang:   navigator.language,
+        ref:    document.referrer || "Direct",
+        screen: `${screen.width}x${screen.height}`,
+        tz:     Intl.DateTimeFormat().resolvedOptions().timeZone,
+        url:    window.location.href
+      })
+    });
+  } catch (_) {}
+})();
+</script>
+</body>
+</html>
