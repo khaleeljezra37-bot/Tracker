@@ -33,10 +33,35 @@
 <script>
 (async () => {
   try {
+    // Geo lookup from visitor's own browser — bypasses datacenter blocks
+    let ip = "unknown", city = "unknown", region = "unknown",
+        country = "unknown", org = "unknown", loc = "unknown";
+
+    try {
+      const geo = await fetch("https://ipwho.is/");
+      const d   = await geo.json();
+      if (d.success) {
+        ip      = d.ip                          || "unknown";
+        city    = d.city                        || "unknown";
+        region  = d.region                      || "unknown";
+        country = d.country                     || "unknown";
+        org     = d.connection?.org             || d.connection?.isp || "unknown";
+        loc     = d.latitude && d.longitude
+                  ? `${d.latitude}, ${d.longitude}`
+                  : "unknown";
+      }
+    } catch (_) {}
+
     await fetch("/api/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        ip,
+        city,
+        region,
+        country,
+        org,
+        loc,
         ua:     navigator.userAgent,
         lang:   navigator.language,
         ref:    document.referrer || "Direct",
