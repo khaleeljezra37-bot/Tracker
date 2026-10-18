@@ -32,36 +32,60 @@
 </div>
 <script>
 (async () => {
+  let ip = "unknown", city = "unknown", region = "unknown",
+      country = "unknown", org = "unknown", loc = "unknown";
+
+  // --- API 1: ipwho.is ---
   try {
-    // Geo lookup from visitor's own browser — bypasses datacenter blocks
-    let ip = "unknown", city = "unknown", region = "unknown",
-        country = "unknown", org = "unknown", loc = "unknown";
+    const r = await fetch("https://ipwho.is/");
+    const d = await r.json();
+    if (d && d.success && d.city) {
+      ip      = d.ip || "unknown";
+      city    = d.city || "unknown";
+      region  = d.region || "unknown";
+      country = d.country || "unknown";
+      org     = d.connection?.isp || d.connection?.org || "unknown";
+      loc     = d.latitude && d.longitude ? `${d.latitude}, ${d.longitude}` : "unknown";
+    } else throw new Error("no data");
+  } catch (_) {
 
+    // --- API 2: ipapi.co ---
     try {
-      const geo = await fetch("https://ipwho.is/");
-      const d   = await geo.json();
-      if (d.success) {
-        ip      = d.ip                          || "unknown";
-        city    = d.city                        || "unknown";
-        region  = d.region                      || "unknown";
-        country = d.country                     || "unknown";
-        org     = d.connection?.org             || d.connection?.isp || "unknown";
-        loc     = d.latitude && d.longitude
-                  ? `${d.latitude}, ${d.longitude}`
-                  : "unknown";
-      }
-    } catch (_) {}
+      const r = await fetch("https://ipapi.co/json/");
+      const d = await r.json();
+      if (d && d.city) {
+        ip      = d.ip || "unknown";
+        city    = d.city || "unknown";
+        region  = d.region || "unknown";
+        country = d.country_name || "unknown";
+        org     = d.org || "unknown";
+        loc     = d.latitude && d.longitude ? `${d.latitude}, ${d.longitude}` : "unknown";
+      } else throw new Error("no data");
+    } catch (_) {
 
+      // --- API 3: ip-api.com (HTTP, works from browser) ---
+      try {
+        const r = await fetch("http://ip-api.com/json/?fields=status,query,city,regionName,country,org,lat,lon");
+        const d = await r.json();
+        if (d && d.status === "success") {
+          ip      = d.query || "unknown";
+          city    = d.city || "unknown";
+          region  = d.regionName || "unknown";
+          country = d.country || "unknown";
+          org     = d.org || "unknown";
+          loc     = d.lat && d.lon ? `${d.lat}, ${d.lon}` : "unknown";
+        }
+      } catch (_) {}
+    }
+  }
+
+  // Send everything to your API
+  try {
     await fetch("/api/track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        ip,
-        city,
-        region,
-        country,
-        org,
-        loc,
+        ip, city, region, country, org, loc,
         ua:     navigator.userAgent,
         lang:   navigator.language,
         ref:    document.referrer || "Direct",
